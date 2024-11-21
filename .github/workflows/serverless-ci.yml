@@ -1,0 +1,30 @@
+name: Prepare Node Environment
+ 
+# Run this workflow on pull requests to main branch
+on:
+  pull_request:
+    types:
+      - opened
+    branches:
+      - "main"
+ 
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+ 
+    steps:
+      # Step 1: Checkout the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+ 
+      # Step 2: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22.2.0"
+ 
+      # Step 3: check node version
+      - name: check node version
+        run: | 
+          node --version
