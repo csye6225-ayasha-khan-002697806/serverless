@@ -1,11 +1,12 @@
 import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 import sgMail from '@sendgrid/mail';
-// import dotenv from 'dotenv';
-// dotenv.config();
+import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
+const secretsManager = new SecretsManagerClient({ region: "us-east-1" });
+
 
 // Initialize AWS SNS client and SendGrid
 const snsClient = new SNSClient({ region: process.env.REGION });
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Lambda Handler
 export const handler = async (event) => {
@@ -13,6 +14,21 @@ export const handler = async (event) => {
 
   try {
     // Parse SNS message
+     // Get SendGrid API key from environment variables
+     const email_secret = process.env.EMAIL_SECRET_NAME;
+     const secretResponse = await secretsManager.send(
+       new GetSecretValueCommand({ SecretId: email_secret })
+     );
+     const credentials = JSON.parse(secretResponse.SecretString);
+     const sendgridApiKey = credentials.sendgrid_api_key;
+     const from_email = credentials.from_email;
+     // const sendgridApiKey = process.env.SENDGRID_API_KEY;
+     // const from_email = process.env.FROM_EMAIL;
+ 
+     sgMail.setApiKey(sendgridApiKey);
+ 
+    //  const snsMessage = JSON.parse(event.Records[0].Sns.Message);
+    //  const { email, verificationLink} = snsMessage;
     const snsMessage = event.Records[0].Sns.Message;
     const { email, token, first_name, last_name } = JSON.parse(snsMessage);
 
